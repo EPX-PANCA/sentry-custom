@@ -48,3 +48,15 @@ Where you replace `83b1380` with the sha you want to use.
 
 [build-status-image]: https://github.com/getsentry/onpremise/workflows/test/badge.svg
 [build-status-url]: https://git.io/JUYkh
+
+
+
+
+```sh
+
+docker-compose run --rm web createuser (add user)
+
+export SENTRY_TEST_HOST="${SENTRY_TEST_HOST:-http://localhost:9393}" (edit baseurl -> /_integration-test, for apply run ./test.sh)
+
+
+```
