@@ -1,0 +1,56 @@
+name: Test
+on:
+  # Run CI on all pushes to the master and release/** branches, and on all new
+  # pull requests, and on all pushes to pull requests (even if a pull request
+  # is not against master).
+  push:
+    branches:
+      - "master"
+      - "release/**"
+  pull_request:
+defaults:
+  run:
+    shell: bash
+jobs:
+  unit-test:
+    runs-on: ubuntu-20.04
+    name: "unit tests"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Unit Tests
+        working-directory: install
+        run: find ./ -type f -name "*-test.sh" -exec "./{}" \;
+
+  integration-test:
+    runs-on: ubuntu-20.04
+    name: "integration test"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+  
+      - name: Pin docker-compose
+        run: |
+          COMPOSE_PATH=/usr/local/bin/docker-compose
+          source ./install/_min-requirements.sh
+          sudo rm $COMPOSE_PATH
+          sudo curl -L https://github.com/docker/compose/releases/download/${MIN_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` -o $COMPOSE_PATH
+          sudo chmod +x $COMPOSE_PATH
+
+      - name: Integration Test
+        run: |
+          echo "Testing initial install"
+          ./install.sh
+          ./_integration-test/run.sh
+          echo "Testing in-place upgrade"
+          # Also test plugin installation here
+          echo "sentry-auth-oidc" >> sentry/requirements.txt
+          ./install.sh --minimize-downtime
+          ./_integration-test/run.sh
+
+      - name: Inspect failure
+        if: failure()
+        run: |
+          docker-compose ps
+          docker-compose logs
