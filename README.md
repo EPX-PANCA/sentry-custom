@@ -50,9 +50,13 @@ Where you replace `83b1380` with the sha you want to use.
 [build-status-url]: https://git.io/JUYkh
 
 
+---
+
 
 
 ```sh
+
+docker system prune -a (if you have problem when installing, run this command and re run sudo ./install.sh)
 
 docker-compose run --rm web createuser (add user)
 
